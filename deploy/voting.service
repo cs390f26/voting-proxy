@@ -7,13 +7,13 @@ Wants=network-online.target
 Type=simple
 User=ec2-user
 Group=ec2-user
-WorkingDirectory=/home/ec2-user/voting_proxy
-EnvironmentFile=/home/ec2-user/voting_proxy/.env
+WorkingDirectory=/home/ec2-user/voting-proxy
+EnvironmentFile=/home/ec2-user/voting-proxy/.env
 # The database runs on another instance. Wait until it answers before starting
 # gunicorn so we do not crash-loop while that instance is still booting.
 TimeoutStartSec=330
-ExecStartPre=/home/ec2-user/voting_proxy/.venv/bin/python /home/ec2-user/voting_proxy/scripts/wait_for_dynamodb.py --timeout 300
-ExecStart=/home/ec2-user/voting_proxy/.venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 'voting.app:launch()'
+ExecStartPre=/home/ec2-user/voting-proxy/.venv/bin/python /home/ec2-user/voting-proxy/scripts/wait_for_dynamodb.py --timeout 300
+ExecStart=/home/ec2-user/voting-proxy/.venv/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 'voting.app:launch()'
 Restart=on-failure
 RestartSec=5
 

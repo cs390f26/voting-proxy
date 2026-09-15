@@ -12,12 +12,12 @@ set -euo pipefail
 ##############################################################################
 ##############################################################################
 # CHANGE REPO_URL BELOW: REPLACE YOUR_GITHUB_USERNAME WITH YOUR GITHUB
-# USERNAME. DO NOT CHANGE THE REPOSITORY NAME (voting_proxy).
+# USERNAME. DO NOT CHANGE THE REPOSITORY NAME (voting-proxy).
 ##############################################################################
 ##############################################################################
-REPO_URL="https://github.com/YOUR_GITHUB_USERNAME/voting_proxy.git"
+REPO_URL="https://github.com/YOUR_GITHUB_USERNAME/voting-proxy.git"
 
-APP_DIR=/home/ec2-user/voting_proxy
+APP_DIR=/home/ec2-user/voting-proxy
 
 yum install -y python3.12 git
 

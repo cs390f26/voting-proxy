@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 User=ec2-user
 Group=ec2-user
-WorkingDirectory=/home/ec2-user/voting_proxy/db
+WorkingDirectory=/home/ec2-user/voting-proxy/db
 ExecStart=/usr/bin/java --enable-native-access=ALL-UNNAMED -jar DynamoDBLocal.jar -sharedDb
 Restart=on-failure
 RestartSec=5

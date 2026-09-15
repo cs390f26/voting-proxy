@@ -15,7 +15,7 @@ The files `deploy/userdata-db.sh`, `deploy/userdata-flask.sh`, and `deploy/userd
 * Near the top of each file you will find the line:
 
   ```
-  REPO_URL="https://github.com/YOUR_GITHUB_USERNAME/voting_proxy.git"
+  REPO_URL="https://github.com/YOUR_GITHUB_USERNAME/voting-proxy.git"
   ```
 * Change `YOUR_GITHUB_USERNAME` to your GitHub username.
 * Commit this change and push it back to your GitHub account:
