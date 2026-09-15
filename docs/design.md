@@ -8,13 +8,13 @@ This document describes how the system is deployed and how data moves through th
 Four EC2 instances run the application:
 
 1. **Proxy (nginx)** — the only instance that accepts HTTP from the internet (port 80). nginx forwards each request to a Flask instance. Round-robin is the default: the first request goes to Flask 1, the next to Flask 2, and so on.
-2. **Flask (two instances)** — gunicorn serves the HTTP API and the browser UI on port **5000**. These instances have no public IP.
-3. **Database (DynamoDB Local)** — one Java process holds the `Polls` table on port **8000**. This instance has no public IP. Both Flask instances use the same database (`DYNAMODB_ENDPOINT_URL` in `.env`).
+2. **Flask (two instances)** — gunicorn serves the HTTP API and the browser UI on port **5000**.
+3. **Database (DynamoDB Local)** — one Java process holds the `Polls` table on port **8000**. Both Flask instances use the same database (`DYNAMODB_ENDPOINT_URL` in `.env`).
 
 
 The database and Flask instances have a tag **`voting-role`** (`db` or `flask`). Flask and the proxy use the EC2 API (`DescribeInstances`) and that tag to find private IP addresses. They do not have those IPs written into user data.
 
-Only the proxy is reachable from the internet on ports 22 and 80. SSH to Flask or the database goes through the proxy. Flask accepts port 5000 only from the proxy. DynamoDB Local accepts port 8000 only from the Flask instances — not from the proxy.
+Security groups control who can reach each instance. Only the proxy allows SSH and HTTP from the internet. SSH to Flask or the database must go through the proxy (those security groups allow port 22 only from the proxy). Flask accepts port 5000 only from the proxy. DynamoDB Local accepts port 8000 only from the Flask instances — not from the proxy.
 
 ![Arch](arch.png)
 

@@ -1,6 +1,6 @@
 # Polls
 
-This is the Voting application. The **proxy** (nginx) is the only instance reachable from the internet: it has a public IP, receives HTTP, and forwards each request to one of two Flask servers (round-robin). The Flask servers and the database (DynamoDB Local) have no public IP.
+This is the Voting application. The **proxy** (nginx) receives HTTP from the internet and forwards each request to one of two Flask servers (round-robin). Security groups allow internet access only to the proxy (SSH and HTTP). The Flask servers and the database (DynamoDB Local) accept traffic only from the roles that need them.
 
 Flask and the proxy find the other instances by calling `DescribeInstances` and looking for the tag `voting-role`. You never paste private IP addresses into user data.
 

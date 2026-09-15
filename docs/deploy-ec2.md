@@ -129,8 +129,6 @@ a `voting-role` tag.
 * Leave **Application and OS Images:** Amazon Linux 2023.
 * Leave **Instance type:** `t3.micro`.
 * Under **Key pair**, select `vockey`.
-* Under **Network settings**, click **Edit**.
-  * Set **Auto-assign public IP** to **Disable**.
 * Under **Security group**:
   * Choose **Select existing security group**.
   * Select `voting-db`.
@@ -153,8 +151,6 @@ Launch Flask after the database is running. You **must** launch **two** instance
 * Leave **Application and OS Images:** Amazon Linux 2023.
 * Leave **Instance type:** `t3.micro`.
 * Under **Key pair**, select `vockey`.
-* Under **Network settings**, click **Edit**.
-  * Set **Auto-assign public IP** to **Disable**.
 * Under **Security group**:
   * Choose **Select existing security group**.
   * Select `voting-flask`.
