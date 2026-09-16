@@ -103,7 +103,7 @@ The following steps will create a security group that will allow access to the d
 
 ## Deploy Process
 
-This deploy process has a number of steps, and different machines require different properties. You must launch the database first, then the Flask servers (both at once), and finally the proxy. When you launch the database and Flask servers you must add a special tag so that later launches can find those instances. When you launch the Flask servers and proxy you must add a role to give that machine additional permissions.
+This deploy process has a number of steps, and different machines require different properties. You must launch the database first, then the Flask servers, and finally the proxy. When you launch the database and Flask servers you must add a special tag so that later launches can find those instances. When you launch the Flask servers and proxy you must add a role to give that machine additional permissions.
 
 The following table summarizes the special aspects of each machine:
 
@@ -139,7 +139,7 @@ a `voting-role` tag.
 
 ### Launch the Flask servers
 
-Launch Flask after the database is running. You **must** launch **two** instances in this one step so the proxy can find them together. They have a `voting-role` tag, and they use the `LabInstanceProfile` role.
+Launch the two Flask servers after the database is running. They have a `voting-role` tag, and they use the `LabInstanceProfile` role.
 
 
 * In the EC2 console, click **Launch an instance**.

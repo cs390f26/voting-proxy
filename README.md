@@ -15,6 +15,7 @@ See the **specs** repository for the product specifications (use cases, API, dat
 |-----|----------|
 | [Development setup](docs/development.md) | Virtualenv, install, unit tests, lint, `.env`, DynamoDB Local, run the app, acceptance tests |
 | [Deploy on EC2](docs/deploy-ec2.md) | Security groups, launch order, user data |
+| [Deploy with CloudFormation](docs/deploy-cloudformation.md) | Stack create/delete with the AWS CLI |
 | [Design](docs/design.md) | Deployment layout, Flask layers, data types, package layout |
 
 

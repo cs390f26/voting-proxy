@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Voting proxy: three security groups, one database instance, two Flask
+  instances, and one nginx proxy. User data downloads scripts from your
+  GitHub fork (edit REPO_URL in all three userdata files and push before
+  creating the stack).
+
+Parameters:
+  GitHubUsername:
+    Type: String
+    Description: >-
+      Your GitHub username. The stack downloads userdata scripts from
+      https://raw.githubusercontent.com/<username>/voting-proxy/main/deploy/
+      Push your REPO_URL edits to main before you create the stack.
+    AllowedPattern: "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+    ConstraintDescription: A GitHub username (letters, numbers, hyphens).
+
+Resources:
+  ProxySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SG for Voting Proxy allowing SSH and HTTP.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: SSH
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP
+      Tags:
+        - Key: Name
+          Value: voting-proxy
+
+  FlaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SG for Voting Web servers allowing SSH and port 5000 from proxy SG.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt ProxySecurityGroup.GroupId
+          Description: SSH from proxy
+        - IpProtocol: tcp
+          FromPort: 5000
+          ToPort: 5000
+          SourceSecurityGroupId: !GetAtt ProxySecurityGroup.GroupId
+          Description: gunicorn from proxy
+      Tags:
+        - Key: Name
+          Value: voting-flask
+
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: SG for database server allowing SSH access from proxy SG and DB access from flask SG.
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt ProxySecurityGroup.GroupId
+          Description: SSH from proxy
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          SourceSecurityGroupId: !GetAtt FlaskSecurityGroup.GroupId
+          Description: DynamoDB Local from flask
+      Tags:
+        - Key: Name
+          Value: voting-db
+
+  DbInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      InstanceType: t3.micro
+      KeyName: vockey
+      SecurityGroupIds:
+        - !GetAtt DbSecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/${GitHubUsername}/voting-proxy/main/deploy/userdata-db.sh" \
+            -o /tmp/voting-userdata.sh
+          bash /tmp/voting-userdata.sh
+      Tags:
+        - Key: Name
+          Value: voting-db
+        - Key: voting-role
+          Value: db
+
+  FlaskInstance1:
+    Type: AWS::EC2::Instance
+    DependsOn: DbInstance
+    Properties:
+      ImageId: "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      InstanceType: t3.micro
+      KeyName: vockey
+      IamInstanceProfile: LabInstanceProfile
+      SecurityGroupIds:
+        - !GetAtt FlaskSecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/${GitHubUsername}/voting-proxy/main/deploy/userdata-flask.sh" \
+            -o /tmp/voting-userdata.sh
+          bash /tmp/voting-userdata.sh
+      Tags:
+        - Key: Name
+          Value: voting-flask
+        - Key: voting-role
+          Value: flask
+
+  FlaskInstance2:
+    Type: AWS::EC2::Instance
+    DependsOn: DbInstance
+    Properties:
+      ImageId: "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      InstanceType: t3.micro
+      KeyName: vockey
+      IamInstanceProfile: LabInstanceProfile
+      SecurityGroupIds:
+        - !GetAtt FlaskSecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/${GitHubUsername}/voting-proxy/main/deploy/userdata-flask.sh" \
+            -o /tmp/voting-userdata.sh
+          bash /tmp/voting-userdata.sh
+      Tags:
+        - Key: Name
+          Value: voting-flask
+        - Key: voting-role
+          Value: flask
+
+  ProxyInstance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+      - FlaskInstance1
+      - FlaskInstance2
+    Properties:
+      ImageId: "{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}"
+      InstanceType: t3.micro
+      KeyName: vockey
+      IamInstanceProfile: LabInstanceProfile
+      SecurityGroupIds:
+        - !GetAtt ProxySecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/${GitHubUsername}/voting-proxy/main/deploy/userdata-nginx.sh" \
+            -o /tmp/voting-userdata.sh
+          bash /tmp/voting-userdata.sh
+      Tags:
+        - Key: Name
+          Value: voting-proxy
+
+Outputs:
+  PublicIP:
+    Description: Public IPv4 address of the proxy instance
+    Value: !GetAtt ProxyInstance.PublicIp
